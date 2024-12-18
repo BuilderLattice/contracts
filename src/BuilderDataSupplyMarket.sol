@@ -1,25 +1,29 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.0;
+pragma solidity ^0.8.13;
 
 contract BuilderDataSupplyMarket {
     struct User {
         address addr;
-        string dataHash;  
+        string dataHash;
     }
     struct Match {
         address fellowBuilder;
         uint compatibility;
     }
 
-    mapping (address => User) public users;
+    mapping(address => User) public users;
     address[] public usersAddresses;
     uint public usersCount;
 
-    mapping (address => Match[]) public matches;
-    
-    constructor() { }
+    mapping(address => Match[]) public matches;
 
-    function editMatch(address user1, address user2, uint compatibility) public {
+    constructor() {}
+
+    function editMatch(
+        address user1,
+        address user2,
+        uint compatibility
+    ) public {
         matches[user1].push(Match(user2, compatibility));
         matches[user2].push(Match(user1, compatibility));
     }
@@ -38,7 +42,10 @@ contract BuilderDataSupplyMarket {
     }
 
     function updateUserProfile(string memory _dataHash) public {
-        require(users[msg.sender].addr == msg.sender, "You are not the owner of this profile");
+        require(
+            users[msg.sender].addr == msg.sender,
+            "You are not the owner of this profile"
+        );
         users[msg.sender].dataHash = _dataHash;
     }
 
@@ -48,13 +55,15 @@ contract BuilderDataSupplyMarket {
 
     function getAllUsers() public view returns (User[] memory) {
         User[] memory usersArray = new User[](usersCount);
-        for(uint i = 0; i < usersCount; i++) {
+        for (uint i = 0; i < usersCount; i++) {
             usersArray[i] = users[usersAddresses[i]];
-        } 
+        }
         return usersArray;
     }
 
-    function getSelectedUsers(address[] memory _usersAddresses) public view returns (User[] memory) {
+    function getSelectedUsers(
+        address[] memory _usersAddresses
+    ) public view returns (User[] memory) {
         uint length = _usersAddresses.length;
         User[] memory usersArray = new User[](length);
         for (uint i = 0; i < length; i++) {
@@ -62,5 +71,4 @@ contract BuilderDataSupplyMarket {
         }
         return usersArray;
     }
-
 }
