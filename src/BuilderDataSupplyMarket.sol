@@ -6,7 +6,6 @@ pragma solidity ^0.8.13;
  * @author BuilderLattice.
  * @notice Contract that stores hash and compatibility of builders.
  */
-
 contract BuilderDataSupplyMarket {
     /// @notice Struct to store a user's address and hash corrosponding to its data.
     struct User {
@@ -14,18 +13,22 @@ contract BuilderDataSupplyMarket {
         string userHash;
     }
     /// @notice Struct depecting compatibility between users.
+
     struct Match {
         address userAddress;
         uint256 compatibilityConstant;
     }
 
+    uint256 constant PREMIUM_FEE = 0.001 ether;
     /// @notice Array of users.
-    User[] public usersArray;
+    User[] internal usersArray;
 
     /// @notice Mapping from user address to user struct.
-    mapping(address => User) public users;
+    mapping(address => User) internal users;
     /// Mapping from a user to the array of users it is compatible with.
     mapping(address => Match[]) public matches;
+    /// Mapping indicating if the user has paid the premium for exporting data.
+    mapping(address => bool) public hasPaid;
 
     constructor() {}
 
@@ -35,11 +38,7 @@ contract BuilderDataSupplyMarket {
      * @param user2 Address of the second user.
      * @param compatibility Compatibility between them.
      */
-    function editMatch(
-        address user1,
-        address user2,
-        uint compatibility
-    ) public {
+    function editMatch(address user1, address user2, uint256 compatibility) public {
         matches[user1].push(Match(user2, compatibility));
         matches[user2].push(Match(user1, compatibility));
     }
@@ -60,14 +59,17 @@ contract BuilderDataSupplyMarket {
      * @param _dataHash Hash of the data for the user.
      */
     function updateDataHash(string memory _dataHash) public {
-        require(
-            users[msg.sender].userAddress == msg.sender,
-            "You are not the owner of this profile"
-        );
+        require(users[msg.sender].userAddress == msg.sender, "You are not the owner of this profile");
         users[msg.sender].userHash = _dataHash;
     }
 
-    function exportCompatibilityData() public payable returns (bytes memory) {}
+    /**
+     * @notice Pay the premium for exporting data.
+     */
+    function payPremiumForExport() public payable {
+        require(msg.value >= PREMIUM_FEE, "Not enough funds");
+        hasPaid[msg.sender] = true;
+    }
 
     /**
      * @notice Returns a user struct.
@@ -82,6 +84,7 @@ contract BuilderDataSupplyMarket {
      * @notice Returns an array of all users.
      */
     function getAllUsers() public view returns (User[] memory) {
+        require(hasPaid[msg.sender] == true, "Not paid yet");
         return usersArray;
     }
 
@@ -89,12 +92,10 @@ contract BuilderDataSupplyMarket {
      * @notice Returns an array of selected users.
      * @param _usersAddresses Addresses of the users as an array.
      */
-    function getSelectedUsers(
-        address[] memory _usersAddresses
-    ) public view returns (User[] memory) {
-        uint length = _usersAddresses.length;
+    function getSelectedUsers(address[] memory _usersAddresses) public view returns (User[] memory) {
+        uint256 length = _usersAddresses.length;
         User[] memory arr = new User[](length);
-        for (uint i = 0; i < length; i++) {
+        for (uint256 i = 0; i < length; i++) {
             arr[i] = users[_usersAddresses[i]];
         }
         return arr;
