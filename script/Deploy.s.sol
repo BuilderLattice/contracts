@@ -2,18 +2,18 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-import {BuilderDataSupplyMarket} from "../src/BuilderDataSupplyMarket.sol";
+import {BuilderLattice} from "../src/BuilderLattice.sol";
 
 contract Deploy is Script {
-    BuilderDataSupplyMarket public bdsm;
+    BuilderLattice public bl;
 
     function setUp() public {}
 
     function run() public {
         vm.startBroadcast();
 
-        bdsm = new BuilderDataSupplyMarket();
-        console.log(address(bdsm));
+        bl = new BuilderLattice();
+        console.log(address(bl));
 
         vm.stopBroadcast();
     }
